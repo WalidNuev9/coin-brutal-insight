@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import AssetPriceChart from '@/components/AssetPriceChart';
 import { TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
 
-type TimeInterval = 'h1' | 'h12' | 'd1' | 'w1' | 'm1';
+// Update the TimeInterval type to match what's accepted by the API
+type TimeInterval = 'm1' | 'm5' | 'm15' | 'm30' | 'h1' | 'h2' | 'h6' | 'h12' | 'd1';
 
 interface TimeOption {
   label: string;
@@ -20,10 +21,11 @@ const AssetDetail: React.FC = () => {
   const navigate = useNavigate();
   const [timeInterval, setTimeInterval] = useState<TimeOption>({
     label: '7D',
-    value: 'd1',
+    value: 'd1', // Using "d1" (daily) instead of "w1"
     days: 7
   });
   
+  // Update the timeOptions to use only valid interval values
   const timeOptions: TimeOption[] = [
     { label: '24H', value: 'h1', days: 1 },
     { label: '7D', value: 'd1', days: 7 },
