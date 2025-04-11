@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getAsset, getAssetHistory, formatCurrency, formatLargeNumber, formatPercentChange } from '../services/coinCapService';
 import { Button } from '@/components/ui/button';
 import AssetPriceChart from '@/components/AssetPriceChart';
+import MarketPrediction from '@/components/MarketPrediction';
 import { TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
 
 // Update the TimeInterval type to match what's accepted by the API
@@ -172,6 +173,11 @@ const AssetDetail: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Add the AI Market Prediction section */}
+      {history && history.length > 0 && (
+        <MarketPrediction history={history} symbol={asset.symbol} />
+      )}
       
       <div className="brutal-card p-6">
         <h2 className="text-2xl font-bold mb-4">About {asset.name}</h2>
