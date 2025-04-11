@@ -38,12 +38,35 @@ export interface AssetHistoryResponse {
 
 const BASE_URL = "https://api.coincap.io/v2";
 
+// API Key - if you have one, otherwise leave empty
+const API_KEY = "";
+
+// Configure fetch options for CoinCap API
+const getHeaders = () => {
+  const headers: HeadersInit = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+  
+  // Add API key if available
+  if (API_KEY) {
+    headers['Authorization'] = `Bearer ${API_KEY}`;
+  }
+  
+  return headers;
+};
+
 // Get top assets sorted by rank (market cap)
 export const getAssets = async (limit: number = 20, offset: number = 0): Promise<Asset[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/assets?limit=${limit}&offset=${offset}`);
+    const response = await fetch(`${BASE_URL}/assets?limit=${limit}&offset=${offset}`, {
+      method: 'GET',
+      headers: getHeaders(),
+      mode: 'cors',
+    });
+    
     if (!response.ok) {
-      throw new Error("Failed to fetch assets");
+      throw new Error(`Failed to fetch assets: ${response.status} ${response.statusText}`);
     }
     const data: AssetsResponse = await response.json();
     return data.data;
@@ -56,9 +79,14 @@ export const getAssets = async (limit: number = 20, offset: number = 0): Promise
 // Get a specific asset by id
 export const getAsset = async (id: string): Promise<Asset | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/assets/${id}`);
+    const response = await fetch(`${BASE_URL}/assets/${id}`, {
+      method: 'GET',
+      headers: getHeaders(),
+      mode: 'cors',
+    });
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch asset ${id}`);
+      throw new Error(`Failed to fetch asset ${id}: ${response.status} ${response.statusText}`);
     }
     const data: AssetResponse = await response.json();
     return data.data;
@@ -86,9 +114,14 @@ export const getAssetHistory = async (
       url += `&end=${end}`;
     }
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(),
+      mode: 'cors',
+    });
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch history for asset ${id}`);
+      throw new Error(`Failed to fetch history for asset ${id}: ${response.status} ${response.statusText}`);
     }
     const data: AssetHistoryResponse = await response.json();
     return data.data;
@@ -96,6 +129,54 @@ export const getAssetHistory = async (
     console.error(`Error fetching history for asset ${id}:`, error);
     return [];
   }
+};
+
+// Get mock assets data when API fails (for development)
+export const getMockAssets = (): Asset[] => {
+  return [
+    {
+      id: "bitcoin",
+      rank: "1",
+      symbol: "BTC",
+      name: "Bitcoin",
+      supply: "19000000",
+      maxSupply: "21000000",
+      marketCapUsd: "1000000000000",
+      volumeUsd24Hr: "30000000000",
+      priceUsd: "52000",
+      changePercent24Hr: "2.5",
+      vwap24Hr: "51500",
+      explorer: "https://blockchain.info/"
+    },
+    {
+      id: "ethereum",
+      rank: "2",
+      symbol: "ETH",
+      name: "Ethereum",
+      supply: "120000000",
+      maxSupply: null,
+      marketCapUsd: "400000000000",
+      volumeUsd24Hr: "20000000000",
+      priceUsd: "3100",
+      changePercent24Hr: "-0.8",
+      vwap24Hr: "3150",
+      explorer: "https://etherscan.io/"
+    },
+    {
+      id: "solana",
+      rank: "4",
+      symbol: "SOL",
+      name: "Solana",
+      supply: "555000000",
+      maxSupply: null,
+      marketCapUsd: "60000000000",
+      volumeUsd24Hr: "5000000000",
+      priceUsd: "110",
+      changePercent24Hr: "3.2",
+      vwap24Hr: "108",
+      explorer: "https://explorer.solana.com/"
+    }
+  ];
 };
 
 // Format currency (USD)

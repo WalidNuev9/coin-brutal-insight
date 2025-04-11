@@ -1,17 +1,37 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAssets } from '../services/coinCapService';
+import { getAssets, getMockAssets } from '../services/coinCapService';
 import AssetListItem from './AssetListItem';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 const AssetsList: React.FC = () => {
   const [page, setPage] = useState(1);
   const limit = 20;
+  const { toast } = useToast();
   
   const { data: assets, isLoading, isError } = useQuery({
     queryKey: ['assets', page],
-    queryFn: () => getAssets(limit, (page - 1) * limit),
+    queryFn: async () => {
+      try {
+        const result = await getAssets(limit, (page - 1) * limit);
+        if (result.length === 0) {
+          throw new Error("No assets returned");
+        }
+        return result;
+      } catch (error) {
+        console.error("Error in assets query:", error);
+        // Show toast notification
+        toast({
+          title: "API Connection Issue",
+          description: "Using sample data. The CoinCap API might be temporarily unavailable.",
+          variant: "destructive"
+        });
+        // Return mock data as fallback
+        return getMockAssets();
+      }
+    },
     staleTime: 60000, // 1 minute
   });
 

@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getAsset, getAssetHistory, formatCurrency, formatLargeNumber, formatPercentChange } from '../services/coinCapService';
+import { getAsset, getAssetHistory, formatCurrency, formatLargeNumber, formatPercentChange, getMockAssets } from '../services/coinCapService';
 import { Button } from '@/components/ui/button';
 import AssetPriceChart from '@/components/AssetPriceChart';
 import MarketPrediction from '@/components/MarketPrediction';
 import { TrendingUp, TrendingDown, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 // Update the TimeInterval type to match what's accepted by the API
 type TimeInterval = 'm1' | 'm5' | 'm15' | 'm30' | 'h1' | 'h2' | 'h6' | 'h12' | 'd1';
@@ -20,6 +20,7 @@ interface TimeOption {
 const AssetDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [timeInterval, setTimeInterval] = useState<TimeOption>({
     label: '7D',
     value: 'd1', // Using "d1" (daily) instead of "w1"
@@ -37,7 +38,24 @@ const AssetDetail: React.FC = () => {
 
   const { data: asset, isLoading: isLoadingAsset, isError: isAssetError } = useQuery({
     queryKey: ['asset', id],
-    queryFn: () => getAsset(id!),
+    queryFn: async () => {
+      try {
+        const result = await getAsset(id!);
+        if (!result) {
+          throw new Error(`Asset ${id} not found`);
+        }
+        return result;
+      } catch (error) {
+        console.error(`Error fetching asset ${id}:`, error);
+        toast({
+          title: "API Connection Issue",
+          description: "Using sample data. The CoinCap API might be temporarily unavailable.",
+          variant: "destructive"
+        });
+        // Return mock data as fallback
+        return getMockAssets().find(a => a.id === id) || getMockAssets()[0];
+      }
+    },
     enabled: !!id,
     staleTime: 60000, // 1 minute
   });
@@ -174,7 +192,6 @@ const AssetDetail: React.FC = () => {
         )}
       </div>
       
-      {/* Add the AI Market Prediction section */}
       {history && history.length > 0 && (
         <MarketPrediction history={history} symbol={asset.symbol} />
       )}
