@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/230c9d8b-e1cb-4311-b936-bf419a4c05a3
+**URL**: [https://preview--coin-brutal-insight.lovable.app/]
 
 ## How can I edit this code?
 
